@@ -22,13 +22,14 @@
  * SOFTWARE.
 */
 #include "LibSanitizer.h"
+#include "LibPrint.h"
 
 /// @brief Call this function before exit and do all the necessary cleanup.
 void before_exit(void)
 {
     int enter = 0;
     
-    wprintf(L"Press Enter for exit.");
+    print_log(LOG_EMPTY, L"Press Enter for exit.");
     while(enter != '\r' && enter != '\n'){
         enter = getchar();
     }
@@ -36,11 +37,9 @@ void before_exit(void)
 
 void print_banner(void)
 {
-    WCHAR* banner = L"Modder";
-
-    wprintf(L"Sanitizer\n");
-    wprintf(L"Created By Nerveustech\n");
-    wprintf(L"https://github.com/Nerveustech/Sanitizer\n");
+    print_log(LOG_INFO, L"Sanitizer Collection\n");
+    print_log(LOG_INFO, L"Created By Nerveustech\n");
+    print_log(LOG_INFO, L"https://github.com/Nerveustech/Sanitizer\n");
 }
 
 BOOL is_usb_mode(void)

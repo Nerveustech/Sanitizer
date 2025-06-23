@@ -1,7 +1,7 @@
 #*
 # * MIT License
 # *
-# * Copyright (c) 2024 Andrea Michael M. Molino
+# * Copyright (c) 2024-2025 Andrea Michael M. Molino
 # *
 # * Permission is hereby granted, free of charge, to any person obtaining a copy
 # * of this software and associated documentation files (the "Software"), to deal
@@ -22,12 +22,10 @@
 # * SOFTWARE.
 #*
 
-cmake_minimum_required(VERSION 3.1...3.20)
+cmake_minimum_required(VERSION 3.20...4.0)
 
-project(Sanitizer VERSION 1.0.20 LANGUAGES C)
+project(Apollyon LANGUAGES C)
 
-function(build_movemenoreg)
-    add_executable(movemenoreg src/movemenoreg/main.c lib/LibSanitizer.c)
-endfunction()
 
-build_movemenoreg()
+add_executable(movemenoreg src/movemenoreg/main.c src/core/apollyon.c)
+target_include_directories(movemenoreg PUBLIC include/core PRIVATE src/movemenoreg/movemenoreg.h)

@@ -1,26 +1,24 @@
-# Sanitizer
-Sanitizer is a collection of modules designed to remove various types of malware effectively.
+# Apollyon
+**Apollyon** is a collection of modules designed to effectively remove various types of malware.
 
-# Build
-To build the project, clone the repository and use CMake:
+## Introduction
+Malware is a growing problem for computer systems, and Apollyon is designed to help solve this problem by providing an easy-to-use and effective solution for malware removal.
 
-```sh
-git clone https://github.com/Nerveustech/Sanitizer.git
-cd Sanitizer
-cmake --build build
+## Building
+To build all the modules, follow these steps:
+
+```console
+cd build
+cmake ..
+cmake --build . --parallel --config Release
 ```
 
-# How To Use
-You can download a specific module by navigating to the GitHub directory, entering the folder of the desired module, and retrieving the executable file from the bins folder. Alternatively, you can check the Releases section for precompiled binaries.
+## Using the Modules
+Apollyon modules can be used in two ways:
 
-# Modes of Operation
-USB Mode
-1. Run the module in the directory of the USB drive that needs to be disinfected.
-2. Wait for the process to complete.
+* **USB Mode**: run the module in the directory of the USB drive that needs to be disinfected.
+* **Desktop Mode**: run the module on your desktop to disinfect your system.
 
-Desktop Mode:
-1. Run the module on your desktop to disinfect your system.
-2. Wait for the process to complete.
+## License
 
-# License
-Distributed under the MIT License. See LICENSE for more information.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.

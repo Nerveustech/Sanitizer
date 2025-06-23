@@ -21,26 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
 */
-#include "LibSanitizer.h"
-#include "LibPrint.h"
-
-/// @brief Call this function before exit and do all the necessary cleanup.
-void before_exit(void)
-{
-    int enter = 0;
-    
-    print_log(LOG_EMPTY, L"Press Enter for exit.");
-    while(enter != '\r' && enter != '\n'){
-        enter = getchar();
-    }
-}
-
-void print_banner(void)
-{
-    print_log(LOG_INFO, L"Sanitizer Collection\n");
-    print_log(LOG_INFO, L"Created By Nerveustech\n");
-    print_log(LOG_INFO, L"https://github.com/Nerveustech/Sanitizer\n");
-}
+#include "../../include/core/apollyon.h"
 
 BOOL is_usb_mode(void)
 {
@@ -122,4 +103,14 @@ int kill_process(const WCHAR* procname)
     CloseHandle(snapshot);
     
     return 1;
+}
+
+void apollyon_pause(const WCHAR* message)
+{
+    int enter = 0;
+    
+    info(message);
+    while(enter != '\r' && enter != '\n'){
+        enter = getchar();
+    }
 }

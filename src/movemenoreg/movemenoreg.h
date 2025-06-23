@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 Andrea Michael M. Molino
+ * Copyright (c) 2025 Andrea Michael M. Molino
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,23 +22,27 @@
  * SOFTWARE.
 */
 
-#ifndef LIB_SANITIZER_H
-#define LIB_SANITIZER_H
+/*Module struct*/
+typedef struct
+{
+    const WCHAR mmr_lnk_argument[47];
+    const WCHAR mmr_vbs_helper[11];
+    const WCHAR mmr_lnk_helper[12];
+    const WCHAR mmr_vbs_installer[14];
+    const WCHAR mmr_vbs_main[16];
+    const WCHAR mmr_exe_miner[20];
+    const WCHAR mmr_folder[16];
+    const WCHAR mmr_process[12];
 
-#include <Windows.h>
-#include <stdio.h>
-#include <TlHelp32.h>
+} movemenoreg_t;
 
-/*Function VOID section*/
-
-void before_exit(void);
-void print_banner(void);
-
-/*Function BOOL section*/
-
-BOOL is_usb_mode(void);
-BOOL does_folder_exist(const WCHAR* directory);
-BOOL remove_folder(const WCHAR* directory);
-int kill_process(const WCHAR* procname);
-
-#endif //LIB_SANITIZER_H
+movemenoreg_t movemenoreg = {
+    .mmr_lnk_argument  = L"/C .\\WindowsServices\\movemenoreg.vbs",
+    .mmr_vbs_helper    = L"helper.vbs",
+    .mmr_lnk_helper    = L"helper.lnk",
+    .mmr_vbs_installer = L"installer.vbs",
+    .mmr_vbs_main      = L"movemenoreg.vbs",
+    .mmr_exe_miner     = L"WindowsServices.exe",
+    .mmr_folder        = L"WindowsServices",
+    .mmr_process       = L"wscript.exe"
+};

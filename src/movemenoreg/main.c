@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 Andrea Michael M. Molino
+ * Copyright (c) 2024-2025 Andrea Michael M. Molino
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,58 +22,24 @@
  * SOFTWARE.
 */
 
-#include <Windows.h>
-#include <string.h>
-#include <Shlwapi.h>
 #include <ShlObj.h>
+#include <Shlwapi.h>
+#include <string.h>
+#include <Windows.h>
 
-#define LIB_PRINT_IMPLEMENTATION
-#include "LibPrint.h"
-#include "../../lib/LibSanitizer.h"
+#define LIB_LOG_IMPLEMENTATION
 
-/*Module struct*/
-typedef struct
-{
-    const WCHAR mmr_lnk_argument[47];
-    const WCHAR mmr_vbs_helper[11];
-    const WCHAR mmr_lnk_helper[12];
-    const WCHAR mmr_vbs_installer[14];
-    const WCHAR mmr_vbs_main[16];
-    const WCHAR mmr_exe_miner[20];
-    const WCHAR mmr_folder[16];
-    const WCHAR mmr_process[12];
-    
-    BOOL usb_mode;
-} Sanitizer_s;
-
-Sanitizer_s Sanitizer = {
-    .mmr_lnk_argument  = L"/C .\\WindowsServices\\movemenoreg.vbs",
-    .mmr_vbs_helper    = L"helper.vbs",
-    .mmr_lnk_helper    = L"helper.lnk",
-    .mmr_vbs_installer = L"installer.vbs",
-    .mmr_vbs_main      = L"movemenoreg.vbs",
-    .mmr_exe_miner     = L"WindowsServices.exe",
-    .mmr_folder        = L"WindowsServices",
-    .mmr_process       = L"wscript.exe"
-};
+#include "../../include/core/log.h"
+#include "../../include/core/apollyon.h"
+#include "movemenoreg.h"
 
 /*function prototypes*/
-void InitSanitizer(void);
 void match_lnk_sig(WIN32_FIND_DATAW file_data);
 void find_lnk_remove(void);
 void restore_original_file(void);
+void before_exit(void);
 /*End function prototypes*/
 
-
-void InitSanitizer(void)
-{
-    if(is_usb_mode() == TRUE){
-        Sanitizer.usb_mode = TRUE;
-        return;
-    }
-
-    Sanitizer.usb_mode = FALSE;
-}
 
 void match_lnk_sig(WIN32_FIND_DATAW file_data)
 {
@@ -100,13 +66,13 @@ void match_lnk_sig(WIN32_FIND_DATAW file_data)
         psl->lpVtbl->GetArguments(psl, wc_target_lnk, MAX_PATH);
         MultiByteToWideChar(CP_ACP, 0, (LPCCH)wc_target_lnk, -1, wc_lnk_args, MAX_PATH);
 
-        if(wcscmp(wc_lnk_args, Sanitizer.mmr_lnk_argument) == 0){
-            print_log(LOG_WARNING, L"Malevolent LNK detected: %s\n", file_data.cFileName);
+        if(wcscmp(wc_lnk_args, movemenoreg.mmr_lnk_argument) == 0){
+            warning(L"Malevolent LNK detected: %s\n", file_data.cFileName);
 
             if(DeleteFileW(file_data.cFileName))
-                print_log(LOG_SUCCESS, L"Malevolent LNK removed: %s\n", file_data.cFileName);
+                okay(L"Malevolent LNK removed: %s\n", file_data.cFileName);
             else
-                print_log(LOG_WARNING, L"Malevolent LNK could not be removed: %s\n", file_data.cFileName);
+                warning(L"Malevolent LNK could not be removed: %s\n", file_data.cFileName);
         }
         
         ppf->lpVtbl->Release(ppf);
@@ -140,7 +106,7 @@ void find_lnk_remove(void)
 void restore_original_file(void)
 {
     if(!does_folder_exist(L"_")){
-        print_log(LOG_INFO, L"There are no files to restore.\n");
+        info(L"There are no files to restore.\n");
         return;
     }
 
@@ -172,119 +138,120 @@ void restore_original_file(void)
     FindClose(hfile);
     
     if(RemoveDirectoryW(L"_")){
-        print_log(LOG_SUCCESS, L"All files have been restored.\n");
+        okay(L"All files have been restored.\n");
     }
     else{
-        print_log(LOG_WARNING, L"Some files could not been restored.\n");
+        warning(L"Some files could not been restored.\n");
     }
     return;
 }
 
-int main(void)
+
+
+int wmain(void)
 {
-    SetConsoleTitleW(L"Movemenoreg Sanitizer");
+    SetConsoleTitleW(L"Apollyon - Movemenoreg");
 
-    print_log(LOG_INFO, L"Initializing Sanitizer...\n");
+    info(L"Initializing Apollyon system...\n");
+    info(L"Version: %s\n", L"2025.06.23");
+
+    apollyon_pause(L"Press Enter for start.");
     CoInitialize(NULL);
-    InitSanitizer();
-
-    //Usb section
-    if(Sanitizer.usb_mode){
-        print_log(LOG_INFO, L"Running Sanitizer on USB...\n");
-        print_log(LOG_INFO, L"Module: %s\n", Sanitizer.mmr_vbs_main);
+    
+    if(is_usb_mode()){// Usb section
+        info(L"Running on USB...\n");
+        info(L"Module: %s\n", movemenoreg.mmr_vbs_main);
         
-        print_log(LOG_INFO, L"Searching for LNK file.\n");
+        info(L"Searching for LNK file.\n");
         find_lnk_remove();
-        print_log(LOG_SUCCESS, L"Removed All LNK file.\n");
+        okay(L"Removed All LNK file.\n");
 
-        print_log(LOG_INFO, L"Searching for folder where reside the malware.\n");
-        if(does_folder_exist(Sanitizer.mmr_folder)){
-            print_log(LOG_WARNING, L"Malware folder detected: %s.\n", Sanitizer.mmr_folder);
-            print_log(LOG_INFO, L"Attempting to remove: %s.\n", Sanitizer.mmr_folder);
+        info(L"Searching for folder where reside the malware.\n");
+        if(does_folder_exist(movemenoreg.mmr_folder)){
+            warning(L"Malware folder detected: %s.\n", movemenoreg.mmr_folder);
+            info(L"Attempting to remove: %s.\n", movemenoreg.mmr_folder);
             
-            if(remove_folder(Sanitizer.mmr_folder)){
-                print_log(LOG_SUCCESS, L"Malware folder removed.\n");
+            if(remove_folder(movemenoreg.mmr_folder)){
+                okay(L"Malware folder removed.\n");
             }
-            print_log(LOG_WARNING, L"Malware folder could not be removed.\n");
+            warning(L"Malware folder could not be removed.\n");
         }
         else{
-            print_log(LOG_SUCCESS, L"Malware folder not present.\n");
+            okay(L"Malware folder not present.\n");
         }
 
-        print_log(LOG_INFO, L"Attempting to restore the original files it may take some time.\n");
+        info(L"Attempting to restore the original files it may take some time.\n");
         restore_original_file();
 
 
-        before_exit();
+        apollyon_pause(L"Press Enter for exit.");
         CoUninitialize();
         return 0;
     }
-    //Desktop section
-    else
+    
+    else// Desktop section
     {
         PWSTR roaming_appdata = {0}, startup_path = {0};
         WCHAR roaming_appdata_formatted[MAX_PATH] = {0}, startup_formatted[MAX_PATH] = {0};
         int kill_proc_ret = 0;
 
-        print_log(LOG_INFO, L"Running Sanitizer on Desktop...\n");
-        print_log(LOG_INFO, L"Module: %s\n", Sanitizer.mmr_vbs_main);
+        info(L"Running on Desktop...\n");
+        info(L"Module: %s\n", movemenoreg.mmr_vbs_main);
 
-        print_log(LOG_INFO, L"Searching for malevolent process: %s.\n", Sanitizer.mmr_process);
-        kill_proc_ret = kill_process(Sanitizer.mmr_process);
+        info(L"Searching for malevolent process: %s.\n", movemenoreg.mmr_process);
+        kill_proc_ret = kill_process(movemenoreg.mmr_process);
         switch (kill_proc_ret)
         {
             case 1:
-                print_log(LOG_SUCCESS, L"Malevolent process: %s not present.\n", Sanitizer.mmr_process);
+                okay(L"Malevolent process: %s not present.\n", movemenoreg.mmr_process);
                 break;
             case 2:
-                print_log(LOG_WARNING, L"Malevolent process: %s could not be killed.\n", Sanitizer.mmr_process);
+                warning(L"Malevolent process: %s could not be killed.\n", movemenoreg.mmr_process);
                 break;
             case 3:
-                print_log(LOG_SUCCESS, L"Malevolent process: %s killed.\n", Sanitizer.mmr_process);
+                okay(L"Malevolent process: %s killed.\n", movemenoreg.mmr_process);
                 break;
         }
         
-        print_log(LOG_INFO, L"Searching for folder where reside the malware.\n");
+        info(L"Searching for folder where reside the malware.\n");
         SHGetKnownFolderPath(&FOLDERID_RoamingAppData, 0, NULL, &roaming_appdata);
-        swprintf(roaming_appdata_formatted, MAX_PATH, L"%s\\%s\0", roaming_appdata, Sanitizer.mmr_folder);
+        swprintf(roaming_appdata_formatted, MAX_PATH, L"%s\\%s\0", roaming_appdata, movemenoreg.mmr_folder);
         
         if(does_folder_exist(roaming_appdata_formatted)){
-            print_log(LOG_WARNING, L"Malware folder detected: %s.\n", Sanitizer.mmr_folder);
-            print_log(LOG_INFO, L"Attempting to remove: %s.\n", Sanitizer.mmr_folder);
+            warning(L"Malware folder detected: %s.\n", movemenoreg.mmr_folder);
+            info(L"Attempting to remove: %s.\n", movemenoreg.mmr_folder);
             
             if(remove_folder(roaming_appdata_formatted)){
-                print_log(LOG_SUCCESS, L"Malware folder removed.\n");
+                okay(L"Malware folder removed.\n");
             }
             else{
-                print_log(LOG_WARNING, L"Malware folder could not be removed.\n");
+                warning(L"Malware folder could not be removed.\n");
             }
         }
         else{
-            print_log(LOG_SUCCESS, L"Malware folder not present.\n");
+            okay(L"Malware folder not present.\n");
         }
         
         SHGetKnownFolderPath(&FOLDERID_Startup, 0, NULL, &startup_path);
-        swprintf(startup_formatted, MAX_PATH, L"%s\\%s\0", startup_path, Sanitizer.mmr_lnk_helper);
+        swprintf(startup_formatted, MAX_PATH, L"%s\\%s\0", startup_path, movemenoreg.mmr_lnk_helper);
         
         if(does_folder_exist(startup_formatted)){
-            print_log(LOG_WARNING, L"LNK startup detected: %s.\n", Sanitizer.mmr_lnk_helper);
-            print_log(LOG_INFO, L"Attempting to remove: %s.\n", Sanitizer.mmr_lnk_helper);
+            warning(L"LNK startup detected: %s.\n", movemenoreg.mmr_lnk_helper);
+            info(L"Attempting to remove: %s.\n", movemenoreg.mmr_lnk_helper);
             
             if(DeleteFileW(startup_formatted)){
-                print_log(LOG_SUCCESS, L"LNK folder removed.\n");
+                okay(L"LNK folder removed.\n");
             }
             else{
-                print_log(LOG_WARNING, L"LNK startup could not be removed.\n");
+                warning(L"LNK startup could not be removed.\n");
             }
         }
         else{
-            print_log(LOG_SUCCESS, L"LNK startup not present.\n");
+            info(L"LNK startup not present.\n");
         }
 
-        before_exit();
+        apollyon_pause(L"Press Enter for exit.");
         CoUninitialize();
         return 0;
     }
-
-    return 0;
 }
